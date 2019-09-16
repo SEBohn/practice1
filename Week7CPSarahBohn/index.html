@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head> 
+<header>
+<meta charset="UTF-8">
+<title>Welcome to my website!</title>
+</header>
+<body>
+ <div class="topnav">
+  <a class="active" href="#index">Home</a>
+  <a href="#myblog">Blog</a>
+  <a href="#aboutme">About me</a>
+  <a href="#gallery">Gallery</a>
+</div>
+<h1><p> Computer science majors rock! </p></h1>
+<div class=uno> Learning computer science now a days is almost a requirement for
+all people because computers can be found in almost anything from cars to refrigerators!  </div>
+
+<h2> Coding with JavaScript!</h2>
+<div class=game> Many people might not realize that JavaScript can allow you to create some pretty cool stuff<br>
+for websites (or even apps)! Blow is a little game I created using JavaScript within my HTML, it works like many<br>
+other computer languages using variables and functions. Have fun with it! You can use the<br>
+arrow keys or your mouse for controls.</div>
+
+<style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+
+<canvas id="myCanvas" width="480" height="320"></canvas>
+
+<script>
+/* Canvas drawing */
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+
+/*Ball drawing */
+	var x = canvas.width/2;
+	var y = canvas.height-30;
+	var dx = 2;
+	var dy = -2;
+	var ballRadius = 10;
+	
+/* Paddle drawing */
+	var paddleHeight = 10;
+	var paddleWidth = 75;
+	var paddleX = (canvas.width-paddleWidth)/2;
+	
+/* Button controls */
+	var rightPressed = false;
+	var leftPressed = false;
+	
+/*Brink drawing */
+	var brickRowCount = 3;
+	var brickColumnCount = 5;
+	var brickWidth = 75;
+	var brickHeight = 20;
+	var brickPadding = 10;
+	var brickOffsetTop = 30;
+	var brickOffsetLeft = 30;
+
+	var bricks = [];
+	for(var c=0; c<brickColumnCount; c++) {
+    bricks[c] = [];
+    for(var r=0; r<brickRowCount; r++) {
+          bricks[c][r] = { x: 0, y: 0, status: 1 };
+    }
+}
+	/*Score */
+	var score = 0;
+	
+	/*Player lives */
+	var lives = 3;
+
+	/* Ball creation function */
+function drawBall() {
+    ctx.beginPath();
+	ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+    ctx.arc(x, y, 10, 0, Math.PI*2);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+}
+
+	/* Paddle creation function */
+function drawPaddle() {
+    ctx.beginPath();
+    ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+}
+
+	/*Game parts movement and interaction */
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBall();
+	drawPaddle();
+	drawScore();
+	drawLives();
+	collisionDetection();
+	drawBricks();
+	if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+        dx = -dx;
+    }
+   if(y + dy < ballRadius) {
+    dy = -dy;
+} else if(y + dy > canvas.height-ballRadius) {
+    if(x > paddleX && x < paddleX + paddleWidth) {
+        dy = -dy;
+    }
+    else {
+        lives--;
+if(!lives) {
+    alert("GAME OVER");
+    document.location.reload();
+}
+else {
+    x = canvas.width/2;
+    y = canvas.height-30;
+    dx = 2;
+    dy = -2;
+    paddleX = (canvas.width-paddleWidth)/2;
+}
+    }
+}
+	if(rightPressed && paddleX < canvas.width-paddleWidth) {
+    paddleX += 7;
+	}
+	else if(leftPressed && paddleX > 0) {
+    paddleX -= 7;
+	}
+    x += dx;
+    y += dy;
+	requestAnimationFrame(draw);
+}
+
+ /* Brink creation function */
+function drawBricks() {
+  for(var c=0; c<brickColumnCount; c++) {
+    for(var r=0; r<brickRowCount; r++) {
+      if(bricks[c][r].status == 1) {
+        var brickX = (r*(brickWidth+brickPadding))+brickOffsetLeft;
+        var brickY = (c*(brickHeight+brickPadding))+brickOffsetTop;
+        bricks[c][r].x = brickX;
+        bricks[c][r].y = brickY;
+        ctx.beginPath();
+        ctx.rect(brickX, brickY, brickWidth, brickHeight);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+      }
+    }
+  }
+}
+
+	/* Key press identifiers */
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+	/* Mouse press identifiers */
+document.addEventListener("mousemove", mouseMoveHandler, false);
+
+function mouseMoveHandler(e) {
+    var relativeX = e.clientX - canvas.offsetLeft;
+    if(relativeX > 0 && relativeX < canvas.width) {
+        paddleX = relativeX - paddleWidth/2;
+    }
+}
+
+
+function keyDownHandler(e) {
+    if(e.keyCode == 39) {
+        rightPressed = true;
+    }
+    else if(e.keyCode == 37) {
+        leftPressed = true;
+    }
+}
+
+function keyUpHandler(e) {
+    if(e.keyCode == 39) {
+        rightPressed = false;
+    }
+    else if(e.keyCode == 37) {
+        leftPressed = false;
+    }
+}
+ /*collision detection for brinks */
+function collisionDetection() {
+  for(var c=0; c<brickColumnCount; c++) {
+    for(var r=0; r<brickRowCount; r++) {
+      var b = bricks[c][r];
+      if(b.status == 1) {
+        if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+          dy = -dy;
+          b.status = 0;
+		  score++;
+		  if(score == brickRowCount*brickColumnCount) {
+                        alert("YOU WIN, CONGRATULATIONS!");
+                        document.location.reload();
+                    }
+        }
+      }
+    }
+  }
+}
+
+/* Drawing score function */
+function drawScore() {
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("Score: "+score, 8, 20);
+}
+
+/* Drawing lives function */
+function drawLives() {
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("Lives: "+lives, canvas.width-65, 20);
+}
+
+draw();
+
+ctx.beginPath();
+ctx.arc(50, 50, 10, 0, Math.PI*2);
+ctx.fillStyle = "#0095DD";
+ctx.fill();
+ctx.closePath();
+</script>
+
+
+</body>
+<footer>
+<p>Copyright SEB 2018</p>
+</footer>
